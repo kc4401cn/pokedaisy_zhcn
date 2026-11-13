@@ -85,17 +85,24 @@ names to `versionName`. A translation build must not do that, for two reasons:
 * A `versionName` such as `1.5.0.1-zh` is parsed as a **pre-release** of
   `1.5.0.1`, so upstream's release always looks newer and is offered.
 
-`-PupdateRepo=owner/repo` points `BuildConfig.UPDATE_REPO` at this fork's own
+`-PupdateRepo=owner/repo` points `BuildConfig.UPDATE_REPO` at a fork's own
 GitHub releases; `-PupdateRepo=` (empty) disables `AppUpdater.check()` entirely —
 no network request at all, and Settings > VERSION simply reports the current
-version. The default stays `lidor30/pokedaisy`, so an unmodified build behaves
-exactly as before. The zh build ships with the check OFF until it has its own
-release repo.
+version.
 
-When a downstream build starts publishing its own releases:
+On the **`dev-zh` branch** of this fork the default is this fork's own repo,
+`kc4401cn/pokedaisy_zhcn`, so a plain `./gradlew assembleRelease` checks this
+fork's releases and never upstream's. The upstream-facing branch keeps
+`lidor30/pokedaisy`, so official builds are unaffected.
+
+When this fork publishes a release:
 
 1. Sign each APK with the **same key** as the installed build (the updater
    compares signing certificates).
 2. Use a tag that `compareVersions` reads as newer than the current
-   `versionName` — e.g. `v1.5.0.2-zh`, not `v1.5.0.1`.
+   `versionName` — e.g. `v1.5.2-zh`, not `v1.5.1-zh`. A tag without the `-zh`
+   mark reads as the *release* of `1.5.1`, which outranks the `1.5.1-zh`
+   pre-release this build reports and would be offered as a bogus update.
 3. Attach one `.apk` asset to a published (non-draft, non-prerelease) release.
+4. Raise `versionCode` in `app/build.gradle.kts` — it is one past upstream's, so
+   the next upstream release has to be followed by another bump.
