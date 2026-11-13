@@ -1,5 +1,9 @@
 package com.pokedaisy.app.companion.ui
 
+import com.pokedaisy.app.companion.data.save.Gen3Legal
+import com.pokedaisy.app.companion.i18n.AppLanguage
+import com.pokedaisy.app.companion.i18n.L10n
+
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.lerp
@@ -135,7 +139,16 @@ private fun gameItemNames(game: GameKind): Map<Int, String>? = when (game) {
 
 /** Games whose bag prints pocket titles in caps; their item tables already are. */
 /** [id]'s name as this game's bag writes it (its own casing and spelling: "EXP. SHARE"). */
-internal fun bagItemName(id: Int): String = gameItemNames(activeGame)?.get(id) ?: itemName(id)
+/** What the bag prints under the list: our own Chinese line, or a TM/HM's move. */
+internal fun itemDescriptionOf(id: Int): String =
+    if (L10n.language != AppLanguage.ZH) com.pokedaisy.app.companion.data.itemDescription(id)
+    else com.pokedaisy.app.companion.i18n.GameNamesZh.itemDescription(id)
+        ?: Gen3Legal.tmHmMove(id)?.let { "可让宝可梦学会「${moveLabel(it)}」" }
+        ?: ""
+
+internal fun bagItemName(id: Int): String =
+    if (L10n.language == AppLanguage.ZH) itemName(id)
+    else gameItemNames(activeGame)?.get(id) ?: itemName(id)
 
 /**
  * Item names from a game the app's tables don't cover (a 3DS game, read from its cart: n3ds/Gen6Text.kt): set, the bag
@@ -832,7 +845,8 @@ fun ItemsScreen(
     val hgssState = LocalHgssBag.current ?: remember { HgssBagState() }
     val pal = bagPaletteFor(activeGame, hgssState.pocket)
     val ownNames = ownItemNames()
-    val caps = if (ownNames != null) null else gameItemNames(activeGame)
+    // A game's own ALL-CAPS table would put its English back over the Chinese names.
+    val caps = if (ownNames != null || L10n.language == AppLanguage.ZH) null else gameItemNames(activeGame)
     val shown = items.map { item ->
         val name = caps?.get(item.itemId) ?: item.name
         item.copy(name = (if (ownNames != null) null else tmMoves[item.itemId])?.let { "$name $it" } ?: name)
@@ -1675,7 +1689,8 @@ private fun ItemDescriptionBar(
             ItemIcon(item.iconAsset, size = u * 24)
         }
         GbaText(
-            message ?: item.description.ifEmpty { item.name },
+            message ?: (if (L10n.language == AppLanguage.ZH) itemDescriptionOf(item.itemId).ifEmpty { item.name }
+            else item.description.ifEmpty { item.name }),
             pal.descText, pal.descTextShadow, m,
             maxLines = Int.MAX_VALUE,
             modifier = Modifier.padding(start = if (hasIcon) u * 8 else 0.dp).weight(1f),

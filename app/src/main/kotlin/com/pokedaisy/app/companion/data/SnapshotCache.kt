@@ -113,7 +113,10 @@ object SnapshotCache {
         val location = LocationView(i.readModifiedUtf8(), i.nullableUTF(), i.readInt(), i.readInt(), i.readInt(), i.readInt())
         val party = List(i.count(PARTY_SIZE)) { i.mon() }
         val items = List(i.count(4096)) {
-            ItemView(i.readInt(), i.readModifiedUtf8(), i.readInt(), i.nullableUTF(), i.readInt(), i.readModifiedUtf8())
+            run {
+                val id = i.readInt(); i.readModifiedUtf8()   // the streamed name is the ROM's; ours reads better in Chinese
+                ItemView(id, itemName(id), i.readInt(), i.nullableUTF(), i.readInt(), i.readModifiedUtf8())
+            }
         }
         val tabs = List(i.count(16)) { i.readModifiedUtf8() }.toSet()
         SnapshotView(
@@ -173,9 +176,11 @@ object SnapshotCache {
         val stats = if (readBoolean()) MonStats(ints(), ints(), readInt(), ints(), readInt().takeIf { it >= 0 }) else null
         val held = readInt()
         val nickname = nullableUTF()
+        val shown = if (name.readsAsText()) name else speciesName(species)
         return MonView(
-            species, name, level, hp, maxHp, status, types, icon, gender, egg, moves,
-            weak, resist, immune, exp, personality, stats, heldItemId = held, nickname = nickname,
+            species, shown, level, hp, maxHp, status, types, icon, gender, egg, moves,
+            weak, resist, immune, exp, personality, stats, heldItemId = held,
+            nickname = nickname?.takeIf { it.readsAsText() },
         )
     }
 

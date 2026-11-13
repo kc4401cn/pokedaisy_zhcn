@@ -1,5 +1,10 @@
 package com.pokedaisy.app.companion.ui
 
+import com.pokedaisy.app.companion.data.itemName
+import com.pokedaisy.app.companion.data.lookupMove
+import com.pokedaisy.app.companion.i18n.AppLanguage
+import com.pokedaisy.app.companion.i18n.L10n
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -54,7 +59,7 @@ internal fun pocketLabel(p: PocketKind): String = when (p) {
 
 /** An item's name in capitals; a TM / HM with the move it teaches ("TM06 TOXIC"), in [game]'s names. */
 internal fun bagItemLabel(id: Int, game: SaveGameData = Gen3GameData, tmMove: (Int) -> Int? = Gen3Legal::tmHmMove): String {
-    val name = game.itemName(id)?.let(::caps) ?: "#$id"
+    val name = if (L10n.language == AppLanguage.ZH) itemName(id) else game.itemName(id)?.let(::caps) ?: "#$id"
     return tmMove(id)?.let { "$name ${moveLabel(it, game)}" } ?: name
 }
 
