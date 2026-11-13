@@ -103,6 +103,8 @@ class ZhHansTest {
         check("places", GameNamesZh.places.values)
         check("itemDescs", GameNamesZh.itemDescs.values)
         check("abilities", GameNamesZh.abilities.values)
+        // The GUIDE's own pages carry the same names.
+        check("guide", guideTranslations.values.mapNotNull { it.zh })
     }
 
     /** Chinese is a language of its own: the device's picks it, and a ROM never does. */
