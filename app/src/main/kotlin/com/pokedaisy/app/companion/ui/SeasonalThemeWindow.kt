@@ -108,7 +108,7 @@ fun shortDate(date: LocalDate): String {
     val day = date.day
     return when (L10n.language) {
         AppLanguage.EN -> "${SHORT_MONTHS_EN[month - 1]} $day"
-        AppLanguage.JA -> "${month}月${day}日"
+        AppLanguage.JA, AppLanguage.ZH -> "${month}月${day}日"
         AppLanguage.KO -> "${month}월 ${day}일"
         AppLanguage.FR -> "$day ${SHORT_MONTHS_FR[month - 1]}"
         AppLanguage.DE -> "$day ${SHORT_MONTHS_DE[month - 1]}"

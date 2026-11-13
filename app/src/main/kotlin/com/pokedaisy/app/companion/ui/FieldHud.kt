@@ -1,5 +1,7 @@
 package com.pokedaisy.app.companion.ui
 
+import com.pokedaisy.app.companion.data.readsAsText
+
 import com.pokedaisy.app.companion.data.guideId
 import com.pokedaisy.app.companion.data.gameGuide
 import com.pokedaisy.app.companion.data.isDsGame
@@ -1358,7 +1360,7 @@ private fun HudMiniMap(
     val head = regionMapBitmap(if (black) com.pokedaisy.app.companion.data.NdsArt.gen5Player(snapshot.game) else labelStyle.headAsset(snapshot.playerGender, snapshot.game))
     val cursor = labelStyle.cursorColor
     val small = rememberGbaTextMetrics(0.75f)
-    val name = snapshot.location.mapSecName
+    val name = placeText(snapshot.location.mapSecName)
     // In a cave / building with its own map (AreaMapView.kt), that map unless the player chose the region's.
     val area = rememberPlayerArea(snapshot)?.takeIf { AreaMapChoice.showsArea(it, com.pokedaisy.app.companion.data.AreaMap.MapId(snapshot.mapGroup, snapshot.mapNum)) }
     if ((model == null || bitmap == null) && area == null && name.isEmpty()) return
@@ -1505,8 +1507,8 @@ private fun HudMapPanel(snapshot: SnapshotView, m: GbaTextMetrics, fly: FlyActio
             // The map at its own shape, never stretched: as tall as there's room for, or as wide.
             val mapW = minOf(maxWidth, mapH * aspect)
             Column(Modifier.width(mapW).then(window), verticalArrangement = Arrangement.spacedBy(gap)) {
-                if (glass) GlassTitle(tk("MAP"), gameCase(snapshot.location.mapSecName), titleM, onClose)
-                else OptionTitleWindow(tk("MAP"), titleM, trailing = gameCase(snapshot.location.mapSecName), onBack = onClose)
+                if (glass) GlassTitle(tk("MAP"), gameCase(placeText(snapshot.location.mapSecName)), titleM, onClose)
+                else OptionTitleWindow(tk("MAP"), titleM, trailing = gameCase(placeText(snapshot.location.mapSecName)), onBack = onClose)
                 // MapScreen draws its own frame: no window around it.
                 Box(Modifier.width(mapW).height(mapW / aspect)) { MapScreen(snapshot, fly = fly, keepShape = true) }
             }
@@ -1751,7 +1753,10 @@ private fun HudBagPanel(
                         else -> {
                             val note = message?.takeIf { it.first == item.itemId }?.second
                             if (note != null) GbaText(note, c.text, c.shadow, small, maxLines = 2)
-                            else if (item.description.isNotEmpty()) GbaText(item.description, c.muted, c.shadow, small, maxLines = 2)
+                            else {
+                                val desc = itemDescriptionOf(item.itemId)
+                                if (desc.isNotEmpty()) GbaText(desc, c.muted, c.shadow, small, maxLines = 2)
+                            }
                         }
                     }
                 }
@@ -1774,7 +1779,7 @@ private fun HudWildPanel(snapshot: SnapshotView, wild: List<HudWild>, m: GbaText
                 // On: the party screen's orange, like a picked pocket.
                 HudPanelButton(tr("KEEP OPEN"), m, selected = kept, onClick = onKeep)
             }
-            GbaText(gameCase(snapshot.location.mapSecName).uppercase().replace('É', 'é'), c.muted, c.shadow, small)
+            GbaText(gameCase(placeText(snapshot.location.mapSecName)).uppercase().replace('É', 'é'), c.muted, c.shadow, small)
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(u)) {
                 if (wild.isEmpty()) GbaText(tr("No wild POKéMON on this map."), c.text, c.shadow, small)
                 wild.groupBy { it.method }.forEach { (method, list) ->

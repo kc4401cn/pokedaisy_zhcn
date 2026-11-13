@@ -38,6 +38,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.pokedaisy.app.companion.data.Gen3Text
+import com.pokedaisy.app.companion.data.readsAsText
+import com.pokedaisy.app.companion.i18n.AppLanguage
+import com.pokedaisy.app.companion.i18n.L10n
 import com.pokedaisy.app.companion.data.natureName
 import com.pokedaisy.app.companion.data.save.PocketKind
 import com.pokedaisy.app.companion.data.save.TrainerBagEditor
@@ -514,7 +517,11 @@ internal fun BoxGrid(
                 OptionButton(null, m, onClick = { onBox((box + data.boxCount - 1) % data.boxCount) },
                     pixelIcon = PixelIcons.cursorLeft, modifier = Modifier.semantics { contentDescription = tr("Previous box") })
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    GbaText(boxName.ifBlank { "BOX ${box + 1}" }, OptionColors.label, OptionColors.labelShadow, m)
+                    // A localized ROM's box names are its own glyph encoding (reads as junk):
+                    // fall back to a plain number instead of printing the junk.
+                    val label = boxName.takeIf { it.isNotBlank() && it.readsAsText() }
+                        ?: if (L10n.language == AppLanguage.ZH) "箱子 ${box + 1}" else "BOX ${box + 1}"
+                    GbaText(label, OptionColors.label, OptionColors.labelShadow, m)
                 }
                 OptionButton(null, m, onClick = { onBox((box + 1) % data.boxCount) },
                     pixelIcon = PixelIcons.cursorRight, modifier = Modifier.semantics { contentDescription = tr("Next box") })

@@ -1,6 +1,8 @@
 package com.pokedaisy.app.companion.ui
 
 import com.pokedaisy.app.companion.data.LockedMap
+import com.pokedaisy.app.companion.i18n.AppLanguage
+import com.pokedaisy.app.companion.i18n.L10n
 import com.pokedaisy.app.companion.i18n.tr
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -1045,7 +1047,22 @@ private fun PartySlot(palette: PartyPalette, mon: MonView?, selected: Boolean, o
         // A picture is wider than the icon: the name and level start the same margin right of it.
         val textX = if (pictures != null) max(g.textX, g.fx + PICTURE_MARGIN * u + 56 * partyPictureScale(g) + PICTURE_MARGIN * u) else g.textX
         val textWidth = with(density) { (g.fx + g.fw - 4 * u - textX).toDp() }
-        GbaText(mon.shownName, text, textShadow, nameM, density.at(textX, g.nameMid, nameM).width(textWidth))
+        // The name: Chinese needs a plain Compose text on the system face - the game-font path
+        // cannot draw hanzi. Every other language keeps the game's own pixel font (upstream's
+        // GbaText), so Japanese / Korean names aren't switched to a system face or shrunk.
+        if (L10n.language == AppLanguage.ZH) {
+            androidx.compose.material3.Text(
+                mon.shownName, color = text, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                // fontFamily as a direct parameter: Theme.kt notes it always beats `style`.
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
+                style = androidx.compose.ui.text.TextStyle(
+                    fontSize = nameM.fontSize * 0.82f, lineHeight = nameM.fontSize * 0.82f,
+                ),
+                modifier = density.at(textX, g.nameMid, nameM).width(textWidth),
+            )
+        } else {
+            GbaText(mon.shownName, text, textShadow, nameM, density.at(textX, g.nameMid, nameM).width(textWidth))
+        }
         if (!showHp) return@BoxWithConstraints
 
         val status = if (mon.hp == 0) "FNT" else mon.status
@@ -1234,3 +1251,4 @@ internal fun HeldItemMarker(itemId: Int, u: Int, x: Float, y: Float) {
         )
     }
 }
+
