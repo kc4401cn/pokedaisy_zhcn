@@ -1,5 +1,8 @@
 package com.pokedaisy.app.companion.data
 
+import com.pokedaisy.app.companion.i18n.AppLanguage
+import com.pokedaisy.app.companion.i18n.L10n
+
 /**
  * Official zh-Hans Pokédex genera and flavor text by national dex number
  * (1-386; genera + later-gen flavor from PokéAPI, Gen 3 flavor from 52poke's
@@ -785,8 +788,9 @@ object DexTextZh {
         386 to "它是宇宙病毒的DNA受到激光照射后，发生突变而生成的宝可梦。胸部的水晶体好像是它的大脑。",
     )
 
-    /** The official genus and flavor text for [national], or null when unknown. */
+    /** The official genus and flavor text for [national], on a Chinese screen; null otherwise or when unknown. */
     fun entry(national: Int): Pair<String, String>? {
+        if (L10n.language != AppLanguage.ZH) return null
         val g = genera[national] ?: return null
         return g to (flavors[national] ?: "")
     }

@@ -1,9 +1,7 @@
 package com.pokedaisy.app.companion.ui
 
 import androidx.compose.ui.graphics.ImageBitmap
-import com.pokedaisy.app.companion.i18n.AppLanguage
 import com.pokedaisy.app.companion.i18n.GameNamesZh
-import com.pokedaisy.app.companion.i18n.L10n
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.FocusRequester
@@ -858,8 +856,7 @@ private fun placesGroupTitle(title: String): String = when (title) {
 }
 
 /** A map section's own name, in the app's language when it has one. */
-internal fun placeText(name: String): String =
-    if (L10n.language == AppLanguage.ZH) GameNamesZh.place(name) ?: name else name
+internal fun placeText(name: String): String = GameNamesZh.place(name) ?: name
 
 /** [directionNames]' words in the app's language. */
 private fun directionText(dir: String): String = when (dir) {

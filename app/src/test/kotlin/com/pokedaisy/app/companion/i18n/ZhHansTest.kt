@@ -2,16 +2,22 @@ package com.pokedaisy.app.companion.i18n
 
 import com.pokedaisy.app.companion.data.DexTextZh
 import com.pokedaisy.app.companion.data.readsAsText
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import java.util.Locale
 
 /** The Chinese tables, and the junk-text rule that decides when the app falls back to them. */
 class ZhHansTest {
+    /** The tables answer on a Chinese screen only - see [nothingOnOtherLanguages]. */
+    @Before fun chinese() = L10n.apply("ZH", null)
+    @After fun reset() = L10n.apply("EN", null)
+
     /** A translated ROM's own character set decodes as Latin-1 leftovers and U+FFFD, never as text. */
     @Test fun junkIsNotText() {
         assertFalse("IoÉ↑Ès".readsAsText())
@@ -46,13 +52,13 @@ class ZhHansTest {
 
     /** The official names, by id. */
     @Test fun theOfficialNames() {
-        assertEquals("妙蛙种子", GameNamesZh.species[1])
-        assertEquals("皮卡丘", GameNamesZh.species[25])
-        assertEquals("大师球", GameNamesZh.items[1])
-        assertEquals("拍击", GameNamesZh.moves[1])
+        assertEquals("妙蛙种子", GameNamesZh.speciesName(1))
+        assertEquals("皮卡丘", GameNamesZh.speciesName(25))
+        assertEquals("大师球", GameNamesZh.itemName(1))
+        assertEquals("拍击", GameNamesZh.moveName(1))
         assertEquals("恶臭", GameNamesZh.ability(1))
         assertEquals("孢子", GameNamesZh.ability(27))
-        assertNull(GameNamesZh.species[0])
+        assertNull(GameNamesZh.speciesName(0))
         assertNull(GameNamesZh.ability(9999))
     }
 
@@ -105,6 +111,19 @@ class ZhHansTest {
         check("abilities", GameNamesZh.abilities.values)
         // The GUIDE's own pages carry the same names.
         check("guide", guideTranslations.values.mapNotNull { it.zh })
+    }
+
+    /** On any other language the tables answer nothing: the ROM's own names are used there. */
+    @Test fun nothingOnOtherLanguages() {
+        L10n.apply("EN", null)
+        assertNull(GameNamesZh.speciesName(1))
+        assertNull(GameNamesZh.itemName(1))
+        assertNull(GameNamesZh.moveName(1))
+        assertNull(GameNamesZh.typeName(0))
+        assertNull(GameNamesZh.ability(1))
+        assertNull(GameNamesZh.itemDescription(1))
+        assertNull(GameNamesZh.place("PALLET TOWN"))
+        assertNull("the dex too", DexTextZh.entry(1))
     }
 
     /** Chinese is a language of its own: the device's picks it, and a ROM never does. */
