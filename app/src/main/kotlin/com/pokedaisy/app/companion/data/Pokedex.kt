@@ -1786,7 +1786,10 @@ object PokedexSource {
         // Chinese name by id stands in on a Chinese screen; other languages keep the ROM's text.
         val clean = decoded.trim()
         if (clean.isNotEmpty() && clean.readsAsText()) return clean
-        return if (L10n.language == AppLanguage.ZH) GameNamesZh.ability(id).orEmpty() else clean
+        // The official name by id, where this table has one (a hack's own ability has no id here):
+        // then the ROM's text, as on every other language.
+        if (L10n.language == AppLanguage.ZH) GameNamesZh.ability(id)?.let { return it }
+        return clean
     }
 
     private fun readEntry(t: PokedexTables, national: Int): DexEntry? {
@@ -1806,7 +1809,7 @@ object PokedexSource {
             else Gen3Text.decode(e, 0, t.entryCategoryLen)
         // A localized ROM's dex text is its own glyph encoding (reads as junk): a Chinese screen
         // falls back to the official text; other languages keep whatever the ROM decoded to.
-        val zh = DexTextZh.entry(national).takeIf { L10n.language == AppLanguage.ZH }
+        val zh = if (L10n.language == AppLanguage.ZH) DexTextZh.entry(national) else null
         val decodedDesc = listOfNotNull(
                 descPtr.takeIf(Gfx::inRom),
                 t.descriptionPage2Off.takeIf { it >= 0 }?.let { Gfx.u32(e, it) }?.takeIf(Gfx::inRom),
@@ -1835,7 +1838,7 @@ object PokedexSource {
         fun b(i: Int) = info[i].toInt() and 0xFF
         val ids = (0 until 3).map { u16le(info, x.abilitiesOff + it * 2) }
         val descPtr = Gfx.u32(info, x.descriptionOff)
-        val zh = DexTextZh.entry(national).takeIf { L10n.language == AppLanguage.ZH }
+        val zh = if (L10n.language == AppLanguage.ZH) DexTextZh.entry(national) else null
         val decodedCategory = Gen3Text.decode(info, x.categoryOff, 13)
         val decodedDesc = if (Gfx.inRom(descPtr)) Gen3Text.decode(rd(descPtr, 200)) else ""
         return DexEntry(
