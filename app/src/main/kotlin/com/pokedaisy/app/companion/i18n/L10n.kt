@@ -7,7 +7,7 @@ import androidx.compose.ui.text.intl.Locale
 import kotlin.concurrent.Volatile
 
 /**
- * The app's own text in nine languages. Game data (Pokémon / move / item / type
+ * The app's own text in ten languages. Game data (Pokémon / move / item / type
  * names, GUIDE pages) isn't translated here - it comes from the game's tables.
  *
  * Text is keyed by its English: `tr("CLOSE GAME")` returns the current
@@ -34,6 +34,9 @@ enum class AppLanguage(val code: String, val romLetter: Char?, val locale: Strin
     // No Gen 3 game came out in Korean; the Korean DS carts (HG / SS, B / W, B2 / W2: game codes ending in K) pick it,
     // else the device's language or the LANGUAGE row. Hangul draws in GalmuriKO (PixelTypeface.kt).
     KO("KO", 'K', "ko", "한국어"),
+    // No Gen 3 game came out in Chinese either; AUTO follows the device's language (or the LANGUAGE
+    // row). Hanzi draw in PixelCJK (PixelTypeface.kt), Chinese glyphs first while Chinese is on.
+    ZH("ZH", null, "zh", "中文"),
     ;
 
     companion object {
@@ -59,7 +62,7 @@ const val LANGUAGE_AUTO = "AUTO"
  */
 data class Tr(
     val ja: String, val fr: String, val de: String, val it: String, val es: String,
-    val br: String? = null, val pt: String? = null, val ko: String? = null,
+    val br: String? = null, val pt: String? = null, val ko: String? = null, val zh: String? = null,
 ) {
     fun of(lang: AppLanguage): String? = when (lang) {
         AppLanguage.EN -> null
@@ -71,6 +74,7 @@ data class Tr(
         AppLanguage.BR -> br
         AppLanguage.PT -> pt
         AppLanguage.KO -> ko
+        AppLanguage.ZH -> zh
     }
 }
 
