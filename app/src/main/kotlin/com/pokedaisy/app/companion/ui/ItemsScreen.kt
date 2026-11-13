@@ -2,6 +2,7 @@ package com.pokedaisy.app.companion.ui
 
 import com.pokedaisy.app.companion.data.save.Gen3Legal
 import com.pokedaisy.app.companion.i18n.AppLanguage
+import com.pokedaisy.app.companion.i18n.GameNamesZh
 import com.pokedaisy.app.companion.i18n.L10n
 
 import androidx.compose.foundation.layout.wrapContentSize
@@ -142,8 +143,8 @@ private fun gameItemNames(game: GameKind): Map<Int, String>? = when (game) {
 /** What the bag prints under the list: our own Chinese line, or a TM/HM's move. */
 internal fun itemDescriptionOf(id: Int): String =
     if (L10n.language != AppLanguage.ZH) com.pokedaisy.app.companion.data.itemDescription(id)
-    else com.pokedaisy.app.companion.i18n.GameNamesZh.itemDescription(id)
-        ?: Gen3Legal.tmHmMove(id)?.let { "可让宝可梦学会「${moveLabel(it)}」" }
+    else GameNamesZh.itemDescription(id)
+        ?: Gen3Legal.tmHmMove(id)?.let { GameNamesZh.teachesMove(moveLabel(it)) }
         ?: ""
 
 internal fun bagItemName(id: Int): String =

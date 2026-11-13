@@ -27,9 +27,7 @@ import androidx.compose.runtime.getValue
 import com.pokedaisy.app.companion.data.PokedexSource
 import com.pokedaisy.app.companion.data.PokedexTables
 import com.pokedaisy.app.companion.data.readsAsText
-import com.pokedaisy.app.companion.i18n.AppLanguage
 import com.pokedaisy.app.companion.i18n.GameNamesZh
-import com.pokedaisy.app.companion.i18n.L10n
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -314,9 +312,7 @@ internal fun rememberFoeAbility(foe: MonView, dexTables: PokedexTables?): String
         cached = { foe.abilityName ?: dexTables?.let { PokedexSource.cachedAbilityName(it, foe.abilityId) } },
         load = { dexTables?.let { PokedexSource.abilityName(it, foe.abilityId) } },
     )
-    return if (rom != null && rom.readsAsText()) rom
-    else if (L10n.language == AppLanguage.ZH) GameNamesZh.ability(foe.abilityId) ?: rom
-    else rom
+    return if (rom != null && rom.readsAsText()) rom else GameNamesZh.ability(foe.abilityId) ?: rom
 }
 
 @Composable
