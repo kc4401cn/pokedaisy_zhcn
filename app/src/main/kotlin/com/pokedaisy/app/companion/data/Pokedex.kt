@@ -1,8 +1,6 @@
 package com.pokedaisy.app.companion.data
 
-import com.pokedaisy.app.companion.i18n.AppLanguage
 import com.pokedaisy.app.companion.i18n.GameNamesZh
-import com.pokedaisy.app.companion.i18n.L10n
 
 import android.graphics.Bitmap
 import java.util.concurrent.ConcurrentHashMap
@@ -1788,7 +1786,7 @@ object PokedexSource {
         if (clean.isNotEmpty() && clean.readsAsText()) return clean
         // The official name by id, where this table has one (a hack's own ability has no id here):
         // then the ROM's text, as on every other language.
-        if (L10n.language == AppLanguage.ZH) GameNamesZh.ability(id)?.let { return it }
+        GameNamesZh.ability(id)?.let { return it }
         return clean
     }
 
@@ -1809,7 +1807,7 @@ object PokedexSource {
             else Gen3Text.decode(e, 0, t.entryCategoryLen)
         // A localized ROM's dex text is its own glyph encoding (reads as junk): a Chinese screen
         // falls back to the official text; other languages keep whatever the ROM decoded to.
-        val zh = if (L10n.language == AppLanguage.ZH) DexTextZh.entry(national) else null
+        val zh = DexTextZh.entry(national)
         val decodedDesc = listOfNotNull(
                 descPtr.takeIf(Gfx::inRom),
                 t.descriptionPage2Off.takeIf { it >= 0 }?.let { Gfx.u32(e, it) }?.takeIf(Gfx::inRom),
@@ -1838,7 +1836,7 @@ object PokedexSource {
         fun b(i: Int) = info[i].toInt() and 0xFF
         val ids = (0 until 3).map { u16le(info, x.abilitiesOff + it * 2) }
         val descPtr = Gfx.u32(info, x.descriptionOff)
-        val zh = if (L10n.language == AppLanguage.ZH) DexTextZh.entry(national) else null
+        val zh = DexTextZh.entry(national)
         val decodedCategory = Gen3Text.decode(info, x.categoryOff, 13)
         val decodedDesc = if (Gfx.inRom(descPtr)) Gen3Text.decode(rd(descPtr, 200)) else ""
         return DexEntry(

@@ -1752,7 +1752,7 @@ object GameNamesZh {
     )
 
     /** A one-line description of [id], or null for an item this table doesn't cover. */
-    fun itemDescription(id: Int): String? = itemDescs[id]
+    fun itemDescription(id: Int): String? = chinese(itemDescs[id])
 
     /**
      * Official ability names by the games' internal id (1-80; PokéAPI). A
@@ -1779,13 +1779,34 @@ object GameNamesZh {
     )
 
     /** Ability [id]'s official name, or null when this table doesn't have it. */
-    fun ability(id: Int): String? = abilities[id]
+    fun ability(id: Int): String? = chinese(abilities[id])
 
     /** [name] in Chinese, or null when this table doesn't have it. */
-    fun place(name: String): String? {
-        places[name.uppercase()]?.let { return it }
-        // "ROUTE 102", "ROUTES 12-15": numbered roads, official wording.
-        Regex("^ROUTES? (\\d+)(?:-(\\d+))?$").find(name.uppercase())?.let { m ->
+    fun place(name: String): String? = chinese(placeOrNull(name))
+
+    /** "箱子 3": a box's number, for a screen whose ROM's own box name is unreadable; null elsewhere. */
+    fun boxNumber(n: Int): String? = chinese("箱子 $n")
+
+    /** A TM/HM's line: the move it teaches. Its caller is already on the Chinese branch. */
+    fun teachesMove(move: String): String = "可让宝可梦学会「$move」"
+
+    /** The name by id: each answers on a Chinese screen only, so no caller checks the language. */
+    fun speciesName(id: Int): String? = chinese(species[id])
+    fun itemName(id: Int): String? = chinese(items[id])
+    fun moveName(id: Int): String? = chinese(moves[id])
+    fun typeName(id: Int): String? = chinese(types[id])
+
+    /** [name] on a Chinese screen; null on every other language, which keeps the ROM's own. */
+    private fun chinese(name: String?): String? =
+        if (L10n.language == AppLanguage.ZH) name else null
+
+    /** "ROUTE 102", "ROUTES 12-15": numbered roads, official wording. */
+    private val ROUTE_RE = Regex("^ROUTES? (\\d+)(?:-(\\d+))?$")
+
+    private fun placeOrNull(name: String): String? {
+        val upper = name.uppercase()
+        places[upper]?.let { return it }
+        ROUTE_RE.find(upper)?.let { m ->
             val to = m.groupValues[2]
             return if (to.isEmpty()) "${m.groupValues[1]}号道路" else "${m.groupValues[1]}-${to}号道路"
         }
