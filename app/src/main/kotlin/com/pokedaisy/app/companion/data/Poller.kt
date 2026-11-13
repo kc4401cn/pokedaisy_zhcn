@@ -436,10 +436,7 @@ class TelemetrySampler {
             val cfg = otherRetailConfig(code, rev)
             kind = if (code.startsWith("BPR") || code.startsWith("BPG")) GameKind.FIRERED else GameKind.EMERALD
             when {
-                // A fan-translated retail ROM can be larger than 16 MB (its text and dex tables
-                // are expanded), so let it reach the structural retail check below instead of
-                // refusing it by size alone.
-                size > 0x2000000L -> unsupportedRom(reader, code, size, null,
+                size > 0x1000000L -> unsupportedRom(reader, code, size, null,
                     "unrecognized $code-based ROM hack (${size / (1024 * 1024)} MB) - no known RAM addresses for this build")
                 cfg == null -> unsupportedRom(reader, code, size, null, "${gameLabel(code)} revision $rev isn't supported yet")
                 else -> {
@@ -669,31 +666,32 @@ class TelemetrySampler {
         // nothing here maps - NOT SUPPORTED, or BEST EFFORT's pick.
         val emerald = code == "BPEE"
         kind = if (emerald) GameKind.EMERALD else GameKind.FIRERED
-        // A fan translation changes the ROM's text, and with it the hash and the English names
-        // BEST EFFORT looks for - but not the engine. Species 1's base stats, its dex height and
-        // weight and the species mapping still identify the retail build, so a translation of a
-        // retail game is read as that game instead of refused as an unknown hack.
-        val revProbe = runCatching { reader.readCoreMemory(0x080000BCL, 1)[0].toInt() and 0xFF }.getOrDefault(1)
-        val retailCfg = when {
+        val rev = runCatching { reader.readCoreMemory(0x080000BCL, 1)[0].toInt() and 0xFF }.getOrDefault(1)
+        val cfg = when {
             emerald -> NATIVE_EMERALD_RETAIL
-            revProbe >= 1 -> NATIVE_FIRERED_REV1
+            rev >= 1 -> NATIVE_FIRERED_REV1
+            // NATIVE_FIRERED_REV0 is the hacks' base too: only retail gets the card.
             else -> NATIVE_FIRERED_REV0.copy(trainerCard = TRAINER_CARD_FIRERED)
         }
-        val probed = !retailHash && structuralRetail(reader, retailCfg)
-        if (!retailHash && !probed) {
+        // A fan translation changes the ROM's text, and with it the hash and the English names
+        // BEST EFFORT looks for - but not the engine: retail's own numbers still identify the build
+        // underneath. Only where the hash matched nothing is that worth asking.
+        val translated = !retailHash && structuralRetail(reader, cfg)
+        if (!retailHash && !translated) {
             unsupportedRom(reader, code, size, smallHash, "unrecognized ${if (emerald) "Emerald" else "FireRed"}-based ROM hack " +
                 "($code, ${size / (1024 * 1024)} MB, sha1 ${smallHash?.take(12) ?: "unknown"}…) - no known RAM addresses for this build")
             android.util.Log.i("pokedaisy", "unrecognized $code ROM: full sha1=$smallHash size=$size")
             proveRetailEngine(reader, code)
             return
         }
-        val cfg = retailCfg
-        if (probed) android.util.Log.i("pokedaisy", "$code: translated retail ROM, species 1 matches retail")
+        if (translated) android.util.Log.i("pokedaisy", "$code: a translated retail ROM")
         // The SHINY marks: retail's shiny check (8 of 65536), on this copy only - a randomizer leaves it be. BOXES:
         // gPokemonStoragePtr, right after gSaveBlock2Ptr (FireRed 0x03005010 in both revisions, Emerald 0x03005D94; read
         // off captures: every box record's checksum held). LeafGreen's is set where the other retail games are detected.
         val checked = withCheckedTables(reader, cfg)
-        nativeCfg = (if (probed) checked.copy(pokedex = cfg.pokedex) else checked)
+        // A translation's dex categories are in its own glyph encoding, so pokedexMatchesRom cannot
+        // pass on one: structuralRetail checked those tables instead.
+        nativeCfg = (if (translated) checked.copy(pokedex = cfg.pokedex) else checked)
             .copy(shinyBelow = 8, pokemonStoragePtr = cfg.saveBlock2Ptr + 4)
         ramVerified = true
         randomizedText = randomizedRom?.let { runCatching { RandomizedRetail.read(reader, it) }.getOrNull() }
@@ -720,24 +718,24 @@ class TelemetrySampler {
     private val retailEngineBuild: RetailEngineBuild?
         get() = retailEngine?.build?.takeIf { beMatch != null && (kind == GameKind.FIRERED || kind == GameKind.EMERALD) }
 
-    /** gBaseStats: 28-byte records, entry 0 first, so species 1 sits one record in. */
-    private val SPECIES_STRIDE = 28L
-
     /**
-     * Is this ROM retail's engine under a translation's text? Compares the numbers a translation
-     * never touches - species 1's six base stats, its dex entry's height and weight - so a Chinese
-     * (or any) translation of a retail game reads as that game instead of "not supported".
+     * Is this ROM retail's engine under a translation's text? Checks the same numbers as
+     * [pokedexMatchesRom] - the probe entry's height and weight, the Pokedex mapping, the front pic -
+     * but not its category text, which a translation rewrites in its own glyph encoding. Species 1's
+     * six base stats say the same thing for gBaseStats, which no translation touches.
      */
     private fun structuralRetail(reader: MemoryReader, cfg: NativeConfig): Boolean = runCatching {
-        val dex = cfg.pokedex ?: return@runCatching false
-        val want = intArrayOf(45, 49, 49, 45, 65, 65)   // Bulbasaur, the same in every Gen 3 base game
-        val stats = reader.readCoreMemory(dex.speciesInfo + SPECIES_STRIDE, want.size)
-        if (want.indices.any { (stats[it].toInt() and 0xFF) != want[it] }) return@runCatching false
-        val entry = reader.readCoreMemory(dex.entries + dex.entryStride.toLong(), maxOf(0x10, dex.entryHeightOff + 4))
-        u16le(entry, dex.entryHeightOff) == dex.probeHeight &&
-            u16le(entry, dex.entryHeightOff + 2) == dex.probeWeight &&
-            u16le(reader.readCoreMemory(dex.speciesToNational, 2), 0) == 1 &&
-            u16le(reader.readCoreMemory(dex.frontPics + 8L + 6, 2), 0) == dex.probeSpecies
+        val t = cfg.pokedex ?: return@runCatching false
+        val e = reader.readCoreMemory(t.entries + t.entryStride, maxOf(0x10, t.entryHeightOff + 4))
+        if (!(u16le(e, t.entryHeightOff) == t.probeHeight &&
+                u16le(e, t.entryHeightOff + 2) == t.probeWeight &&
+                u16le(reader.readCoreMemory(t.speciesToNational + 2L * (t.probeSpecies - 1), 2), 0) == 1 &&
+                u16le(reader.readCoreMemory(t.frontPics + 8L * t.probeSpecies + 6, 2), 0) == t.probeSpecies)
+        ) return@runCatching false
+        // Bulbasaur's six base stats, the same in every Gen 3 base game.
+        val want = intArrayOf(45, 49, 49, 45, 65, 65)
+        val stats = reader.readCoreMemory(t.speciesInfo + t.baseStats.stride, want.size)
+        want.indices.all { (stats[it].toInt() and 0xFF) == want[it] }
     }.getOrDefault(false)
 
     /** Retail with a randomizer's data (UPR ZX: [RandomizedRetail]): retail's RAM and code, so read as retail. */
