@@ -37,9 +37,10 @@ class TranslationsTest {
             .forEach { problems += "\"$it\" is in more than one table" }
         translations.forEach { (key, t) ->
             val want = placeholder.findAll(key).map { it.value }.sorted().toList()
-            AppLanguage.entries.drop(1).forEach { lang ->
+            // The label says which forEach to leave: they are nested, so a bare one is ambiguous.
+            AppLanguage.entries.drop(1).forEach langLoop@ { lang ->
                 // A language this entry doesn't carry (Chinese in a table without it yet): the English shows.
-                val s = t.of(lang) ?: return@forEach
+                val s = t.of(lang) ?: return@langLoop
                 if (s.isBlank()) problems += "\"$key\": empty ${lang.code}"
                 else if (placeholder.findAll(s).map { it.value }.sorted().toList() != want) problems += "\"$key\": ${lang.code} placeholders"
             }

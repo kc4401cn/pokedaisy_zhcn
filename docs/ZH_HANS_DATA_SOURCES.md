@@ -46,6 +46,11 @@ fonts. Trainer-card parsing is deliberately untouched.
   `PixelTypeface.kt` adds the latter to its fallback chain so Japanese, Korean
   and Chinese stay pixel art where `Typeface.CustomFallbackBuilder` (Android 10+)
   is available. Both are listed in Settings > LICENSES.
+- **Half-width digits and letters** — PokéAPI's `zh-hans` writes them full-width
+  ("１０号道路", "ＰＰ提升剂"); the official Chinese ROMs and their own guide text
+  write them half-width ("10号道路", "PP提升剂"), and so do these tables. The
+  full-width punctuation (，。（）) is left alone: it is correct in Chinese prose.
+  `ZhHansTest` fails if a full-width digit or letter comes back.
 
 ## Licensing note for maintainers
 
