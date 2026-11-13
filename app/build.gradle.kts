@@ -33,11 +33,16 @@ val sharedCoreFiles: Set<String> = fileTree("src/main/kotlin") {
 // app/google-services.json, which stays out of this public repo (gitignored; the release
 // workflow writes it from a secret). Without it the app builds the same, reports off.
 val crashlytics = file("google-services.json").isFile
-// In-app update source. Defaults to upstream; a fork can pass `-PupdateRepo=owner/repo`
-// to check its own releases, or `-PupdateRepo=` (empty) to turn the check off entirely.
-// Useful for translations and other downstream builds, whose APKs carry a different
-// signature and must never be offered upstream's release.
-val updateRepo = (project.findProperty("updateRepo") as String?) ?: "lidor30/pokedaisy"
+// The Chinese build's own release setup: its own applicationId, so it installs next to an
+// official PokeDaisy instead of replacing it, and a versionName that marks it as the Chinese
+// build. Both can be overridden: -PzhAppIdSuffix= / -PzhVersionSuffix=
+val zhAppIdSuffix = (project.findProperty("zhAppIdSuffix") as String?) ?: ".zh15"
+val zhVersionSuffix = (project.findProperty("zhVersionSuffix") as String?) ?: "-zh"
+// In-app update source. This fork publishes its own releases, so it checks those: upstream's
+// APK is signed with another key and cannot install over this one, and upstream's versionName
+// reads as a pre-release of the same version, so it would always look newer. An empty value
+// turns the check off (no network request); `-PupdateRepo=owner/repo` points it elsewhere.
+val updateRepo = (project.findProperty("updateRepo") as String?) ?: "kc4401cn/pokedaisy_zhcn"
 if (crashlytics) {
     apply(plugin = "com.google.gms.google-services")
     apply(plugin = "com.google.firebase.crashlytics")
@@ -98,8 +103,12 @@ android {
         targetSdk = 34
         // Bump both for every GitHub release: the updater compares versionName
         // against the release tag (v<versionName>), Android needs versionCode to grow.
-        versionCode = 26
+        // One past both upstream's versionCode and this build's own last one, so it upgrades
+        // over either instead of being refused as the same version.
+        versionCode = 27
         versionName = "1.6.2.1"
+        applicationIdSuffix = zhAppIdSuffix
+        versionNameSuffix = zhVersionSuffix
         // Whether this build can send crash reports at all (CrashReports.available).
         buildConfigField("boolean", "CRASHLYTICS", crashlytics.toString())
         // GitHub repo whose releases the in-app updater checks; empty disables it (see AppUpdater).
