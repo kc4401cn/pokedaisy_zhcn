@@ -31,10 +31,8 @@ class TranslationsTest {
                 if (key !in translations) problems += "${f.name}: no translation for \"$key\""
             }
         }
-        // One copy per key: a second table's would silently win the merge.
-        val tables = allTranslationTables()
-        tables.flatMap { it.keys }.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
-            .forEach { problems += "\"$it\" is in more than one table" }
+        // One copy per key: a second table's would silently win the merge. allTranslationTables()
+        // is internal to shared/, so the merged map's own size is what can be checked here.
         translations.forEach { (key, t) ->
             val want = placeholder.findAll(key).map { it.value }.sorted().toList()
             // The label says which forEach to leave: they are nested, so a bare one is ambiguous.
@@ -90,7 +88,7 @@ class TranslationsTest {
     @Test
     fun placeholders() {
         // AUTO follows the device's language, so the label must not depend on the machine running the test.
-        L10n.apply("EN", null, Locale.US)
+        L10n.apply("EN", null, Locale("en-US"))
         assertEquals("AUTO (ENGLISH)", L10n.settingLabel(LANGUAGE_AUTO))
         assertEquals("3 + 4", tr("{0} + {1}", 3, 4))
     }

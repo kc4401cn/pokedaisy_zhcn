@@ -23,6 +23,9 @@ val appOnlyTests by extra(
         "Black2ReduxTest", "DsPortsTest", "FrenchDsTest", "HeartGoldGermanTest", "LegacyHacksTest",
         "NuzlockeFixturesTest", "PartyReorderConfigTest", "PolishedCrystalDecodeTest", "PrismDecodeTest",
         "RenegadePlatinumTest", "ShinyOddsTest",
+        // The Chinese translation checks: they read the source tree and java.util.Locale, so they
+        // run in the app's JVM tests rather than shared/'s common ones.
+        "TranslationsTest", "GuideTranslationsTest", "ZhHansTest",
     ),
 )
 // Test helpers in those folders that the app's own tests use too: compiled in both modules' tests.
