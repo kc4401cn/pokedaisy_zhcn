@@ -1,7 +1,6 @@
 package com.pokedaisy.app.companion.data
 
 import com.pokedaisy.app.companion.i18n.GameNamesZh
-import com.pokedaisy.app.companion.i18n.DexTextZh
 import kotlin.concurrent.Volatile
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized

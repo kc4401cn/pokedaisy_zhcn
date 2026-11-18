@@ -2,6 +2,7 @@ package com.pokedaisy.app.companion.i18n
 
 import com.pokedaisy.app.companion.data.DexTextZh
 import com.pokedaisy.app.companion.data.readsAsText
+import androidx.compose.ui.text.intl.Locale
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -10,7 +11,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.util.Locale
 
 /** The Chinese tables, and the junk-text rule that decides when the app falls back to them. */
 class ZhHansTest {
@@ -128,7 +128,7 @@ class ZhHansTest {
 
     /** Chinese is a language of its own: the device's picks it, and a ROM never does. */
     @Test fun chineseIsALanguage() {
-        assertEquals(AppLanguage.ZH, AppLanguage.ofLocale(Locale.SIMPLIFIED_CHINESE))
+        assertEquals(AppLanguage.ZH, AppLanguage.ofLocale(Locale("zh-CN")))
         assertEquals(AppLanguage.ZH, AppLanguage.ofCode("ZH"))
         assertNull(AppLanguage.ofCode("XX"))
         assertEquals(AppLanguage.ZH.nativeName, "中文")
