@@ -154,7 +154,7 @@ use your own legally dumped ROMs.
 ### Android
 
 Android 8.0 or newer: dual-screen handhelds, one-screen handhelds and phones.
-[**Download the APK**](https://github.com/lidor30/pokedaisy/releases/latest) (`PokeDaisy-<version>.apk`) on the
+[**Download the APK**](https://github.com/kc4401cn/pokedaisy_zhcn/releases/latest) (`PokeDaisy-<version>.apk`) on the
 device and open it. A short setup links your ROMs folders, picks where saves go and can add cover art. The app then
 offers each new version by itself. Guide: [Install and first setup](https://pokedaisy.com/docs/install/).
 
@@ -389,3 +389,25 @@ are trademarks of Nintendo. Device names (AYN Thor, Retroid, Anbernic) belong to
 makers, and RetroAchievements and SteamGridDB are independent services; none of them
 endorse PokeDaisy. ROM hacks belong to their creators. No games, BIOS or game art are
 included: use your own legally dumped ROMs.
+
+## What changed in Zh-CN fork?
+界面、官方中文游戏名、图鉴文本与攻略全汉化。覆盖安装即可，与官方版可共存。
+
+汉化范围
+
+界面文案 2,009 条（9 张表）、攻略 643 条（5 套页面）
+官方中文游戏名：宝可梦 385 / 招式 354 / 道具 263 / 特性 80 / 地点 453
+图鉴属名与说明：全国图鉴 1–386
+中文像素字体（Fusion Pixel 12px zh-Hans, OFL 1.1）
+设置页搜索支持「中文」
+
+安装
+
+包名 com.pokedaisy.app.zh15，可与官方版共存
+覆盖安装无需卸载旧版（同一签名）
+versionCode 23 / versionName 1.6.1-zh
+
+说明
+
+只汉化应用本身；游戏 ROM 的语言不受影响
+官译汉化 ROM（火红 / 绿宝石等）可正常识别
