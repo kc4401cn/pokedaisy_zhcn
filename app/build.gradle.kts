@@ -89,7 +89,7 @@ android {
         // against the release tag (v<versionName>), Android needs versionCode to grow.
         // One past both upstream's versionCode and this build's own last one, so it upgrades
         // over either instead of being refused as the same version.
-        versionCode = 23
+        versionCode = 24
         versionName = "1.6.1"
         applicationIdSuffix = zhAppIdSuffix
         versionNameSuffix = zhVersionSuffix

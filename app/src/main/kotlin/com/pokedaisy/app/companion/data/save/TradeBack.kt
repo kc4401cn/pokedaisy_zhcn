@@ -1,5 +1,6 @@
 package com.pokedaisy.app.companion.data.save
 
+import com.pokedaisy.app.companion.data.readsAsText
 import com.pokedaisy.app.companion.i18n.tr
 
 /**
@@ -67,5 +68,7 @@ object TradeBack {
         return null
     }
 
-    private fun monName(mon: SaveMon): String = mon.nickname ?: mon.game.speciesName(mon.species) ?: "#${mon.species}"
+    /** A translated ROM's nickname decodes to junk, so the species' name stands in for it (see [readsAsText]). */
+    private fun monName(mon: SaveMon): String =
+        mon.nickname?.takeIf { it.readsAsText() } ?: mon.game.speciesName(mon.species) ?: "#${mon.species}"
 }
