@@ -628,7 +628,9 @@ internal fun speciesLabel(id: Int, game: SaveGameData = Gen3GameData): String = 
 internal fun monLabel(mon: SaveMon): String = when {
     mon.isBadEgg -> tk("BAD EGG")
     mon.isEgg -> tk("EGG")
-    else -> mon.nickname ?: speciesLabel(mon.species, mon.game)
+    // A translated ROM keeps its nicknames in its own character set, which decodes to junk ("ÉóÉpÉõ"): the
+    // species reads better, the way the party slot already shows it.
+    else -> mon.nickname?.takeIf { it.readsAsText() } ?: speciesLabel(mon.species, mon.game)
 }
 
 /** An item's name in [game]'s words, in capitals. */
