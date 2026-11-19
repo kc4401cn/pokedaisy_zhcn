@@ -364,7 +364,7 @@ endorse PokeDaisy. ROM hacks belong to their creators. No games, BIOS or game ar
 included: use your own legally dumped ROMs.
 
 ## What changed in Zh-CN fork?
-界面、官方中文游戏名、图鉴文本与攻略全汉化。覆盖安装即可，与官方版可共存。
+界面、官方中文游戏名、图鉴文本与攻略全汉化。覆盖安装即可，与官方版可共存，目前仅适配了安卓版本。
 
 汉化范围
 
