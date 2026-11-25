@@ -395,7 +395,7 @@ included: use your own legally dumped ROMs.
 
 汉化范围
 
-界面文案 2,009 条（9 张表）、攻略 643 条（5 套页面）
+界面文案 2,098 条（9 张表）、攻略 643 条（5 套页面）
 官方中文游戏名：宝可梦 385 / 招式 354 / 道具 263 / 特性 80 / 地点 453
 图鉴属名与说明：全国图鉴 1–386
 中文像素字体（Fusion Pixel 12px zh-Hans, OFL 1.1）
@@ -405,7 +405,7 @@ included: use your own legally dumped ROMs.
 
 包名 com.pokedaisy.app.zh15，可与官方版共存
 覆盖安装无需卸载旧版（同一签名）
-versionCode 23 / versionName 1.6.1-zh
+versionCode 27 / versionName 1.6.2.1-zh
 
 说明
 
