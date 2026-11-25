@@ -50,30 +50,32 @@ fun pixelFontFamily(context: Context): FontFamily {
     }
 }
 
-/** SETTINGS > FONT's PIXEL SMALL: PixelSmall.ttf over Pixel Operator and its fallbacks, built once like [pixelFontFamily]. */
+/** SETTINGS > FONT's PIXEL SMALL: PixelSmall.ttf over the same fallbacks as [pixelFontFamily], built once. */
 fun pixelSmallFontFamily(context: Context): FontFamily {
-    pixelSmallFamily?.let { return it }
+    val chinese = L10n.language == AppLanguage.ZH
+    synchronized(fontLock) { (if (chinese) pixelSmallFamilyZh else pixelSmallFamily)?.let { return it } }
     return synchronized(fontLock) {
-        pixelSmallFamily ?: run {
-            val app = context.applicationContext
-            val plain = { FontFamily(ComposeFont("fonts/PixelSmall.ttf", app.assets)) }
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) plain()
-            else runCatching {
-                val assets = assetFamilies(app)
-                val small = AndroidFontFamily.Builder(Font.Builder(app.assets, "fonts/PixelSmall.ttf").build()).build()
-                val typeface = Typeface.CustomFallbackBuilder(small)
-                    .addCustomFallback(assets.pixel)
-                    .addCustomFallback(assets.japanese)
-                    .addCustomFallback(assets.korean)
-                    .setSystemFallback("sans-serif")
-                    .build()
-                FontFamily(androidx.compose.ui.text.font.Typeface(typeface))
-            }.getOrElse { plain() }
-        }.also { pixelSmallFamily = it }
+        (if (chinese) pixelSmallFamilyZh else pixelSmallFamily) ?: buildSmallFamily(context.applicationContext, chinese).also {
+            if (chinese) pixelSmallFamilyZh = it else pixelSmallFamily = it
+        }
     }
 }
 
+private fun buildSmallFamily(context: Context, chineseFirst: Boolean): FontFamily {
+    val plain = { FontFamily(ComposeFont("fonts/PixelSmall.ttf", context.assets)) }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return plain()
+    return runCatching {
+        val assets = assetFamilies(context) ?: return plain()
+        val small = AndroidFontFamily.Builder(Font.Builder(context.assets, "fonts/PixelSmall.ttf").build()).build()
+        val builder = Typeface.CustomFallbackBuilder(small)
+        // Without the Chinese face in the chain, every hanzi in this font would draw as "?".
+        chain(assets, chineseFirst).forEach { builder.addCustomFallback(it) }
+        FontFamily(androidx.compose.ui.text.font.Typeface(builder.setSystemFallback("sans-serif").build()))
+    }.getOrElse { plain() }
+}
+
 @Volatile private var pixelSmallFamily: FontFamily? = null
+@Volatile private var pixelSmallFamilyZh: FontFamily? = null
 
 /** A game's own font file ([file], e.g. Yellow's from Gen1Art) over Pixel Operator for anything it lacks. */
 fun gameFontFamily(context: Context, file: java.io.File): FontFamily? {
